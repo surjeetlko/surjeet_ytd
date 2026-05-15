@@ -1,0 +1,10 @@
+# Python ignores
+__pycache__/
+*.pyc
+env/
+venv/
+.env
+
+# Node ignores (Frontend ke andar already hota hai, par root mein bhi dalna safe hai)
+node_modules/
+dist/

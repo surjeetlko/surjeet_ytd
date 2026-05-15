@@ -1,0 +1,97 @@
+/* youtube_project/yt-downloader/src/App.css */
+
+/* Overall Page Styling */
+.main-app-container {
+  max-width: 900px;
+  margin: auto;
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #f1f1f1;
+}
+
+h1 { margin-bottom: 40px; font-weight: 700; color: white; }
+h4 { color: #aaa; margin-top: 0; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem;}
+
+/* Input Bar Styling */
+.input-bar-group {
+  display: flex;
+  width: 100%;
+  max-width: 600px;
+  margin: auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+.input-bar-group input {
+  flex-grow: 1;
+  padding: 16px 20px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+  font-size: 1.1rem;
+}
+.input-bar-group input:focus { outline: none; background-color: rgba(255, 255, 255, 0.1); }
+.input-bar-group button {
+  padding: 16px 25px;
+  border: none;
+  background-color: #e74c3c;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.input-bar-group button:hover { background-color: #c0392b; }
+.input-bar-group button:disabled { background-color: #666; cursor: not-allowed; }
+
+/* Video Card Styling */
+.video-card-container {
+  margin-top: 60px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+  text-align: left; /* Left alignment for structured design */
+}
+.video-card-container img {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto 20px auto;
+  display: block;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.video-title { margin-top: 10px; margin-bottom: 40px; font-size: 1.6rem; line-height: 1.4; }
+
+/* Download Sections and Buttons */
+.all-download-options { display: block; }
+.quality-section { margin-bottom: 30px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 20px; }
+.quality-section:last-child { border-bottom: none; }
+
+/* Unique wrapper to force each link into separate new line */
+.download-wrapper-line {
+  margin-bottom: 14px; /* Space between rows */
+  width: 100%;
+}
+
+/* Base button pill styling */
+.download-pill {
+  display: block; /* Important: Force as block-level within the wrapper for full width */
+  padding: 15px 25px;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-decoration: none; /* No underlines */
+  cursor: pointer;
+  width: 100%;
+  max-width: 400px; /* Optional: Prevent too-wide buttons on desktop */
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+.download-pill:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
+
+/* Colored pill variants */
+.green-pill { background-color: #2ecc71; color: white; }
+.blue-pill { background-color: #3498db; color: white; }
+.orange-pill { background-color: #e67e22; color: #333; }
