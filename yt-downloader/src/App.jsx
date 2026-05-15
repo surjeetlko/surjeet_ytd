@@ -11,7 +11,7 @@ function App() {
     if (!url) return;
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:8000/get-video-info', { url });
+      const response = await axios.post('https://surjeet-ytd.onrender.com/get-video-info', { url });
       setVideoData(response.data);
     } catch (error) {
       alert("Error fetching video details. URL check karein.");
