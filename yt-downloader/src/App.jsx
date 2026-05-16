@@ -11,7 +11,8 @@ function App() {
     if (!url) return;
     setLoading(true);
     try {
-      const response = await axios.post('https://musicians-compressed-urgent-dancing.trycloudflare.com/get-video-info', { url });
+      // const response = await axios.post('https://musicians-compressed-urgent-dancing.trycloudflare.com/get-video-info', { url });
+      const response = await axios.post('https://crown-ahoy-job.ngrok-free.dev/get-video-info', { url });
       setVideoData(response.data);
     } catch (error) {
       alert("Error fetching video details. URL check karein.");
