@@ -11,7 +11,7 @@ function App() {
     if (!url) return;
     setLoading(true);
     try {
-      const response = await axios.post('https://surjeet-ytd.onrender.com/get-video-info', { url });
+      const response = await axios.post('https://lzinx-125-18-144-2.run.pinggy-free.link', { url });
       setVideoData(response.data);
     } catch (error) {
       alert("Error fetching video details. URL check karein.");
