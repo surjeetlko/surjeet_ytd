@@ -21,6 +21,11 @@ async def get_video_info(request: VideoRequest):
         'quiet': True,
         'skip_download': True,
         'cookiefile': 'cookies.txt',
+        'extractor_args': {
+            'youtube': {
+                'client': ['android', 'ios'] # <-- YEH HAI MAGIC TRICK
+            }
+        }
     }
     
     try:
