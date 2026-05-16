@@ -20,6 +20,7 @@ async def get_video_info(request: VideoRequest):
     ydl_opts = {
         'quiet': True,
         'skip_download': True,
+        'cookiefile': 'cookies.txt',
     }
     
     try:
