@@ -1,7 +1,8 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 import yt_dlp
 from pydantic import BaseModel
+
 
 app = FastAPI()
 
@@ -75,3 +76,43 @@ async def get_video_info(request: VideoRequest):
             }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/get-playlist-info")
+async def get_playlist_info(request: Request):
+    data = await request.json()
+    url = data.get("url")
+
+    # extract_flat=True is the magic command here
+    # It tells yt-dlp to only fetch the playlist index, not individual video formats
+    ydl_opts = {
+        'extract_flat': True,
+        'quiet': True,
+    }
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            
+            # Check if it's actually a playlist
+            if 'entries' not in info:
+                return {"error": "No playlist entries found. Please check the URL."}
+
+            videos = []
+            for entry in info['entries']:
+                # Some videos in playlists might be private or deleted, so we check if entry exists
+                if entry: 
+                    videos.append({
+                        "id": entry.get("id"),
+                        "title": entry.get("title"),
+                        "url": entry.get("url"),
+                        "duration": entry.get("duration")
+                    })
+
+            return {
+                "playlist_title": info.get("title"), 
+                "total_videos": len(videos),
+                "videos": videos
+            }
+            
+    except Exception as e:
+        return {"error": str(e)}
