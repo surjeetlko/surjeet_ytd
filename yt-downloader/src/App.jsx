@@ -7,6 +7,9 @@ function App() {
   const [videoData, setVideoData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [playlistData, setPlaylistData] = useState(null);
+  
+  // New state to track progress of individual playlist items
+  const [itemProgress, setItemProgress] = useState({});
 
   const fetchVideoInfo = async () => {
     if (!url) return;
@@ -19,53 +22,129 @@ function App() {
         `https://crown-ahoy-job.ngrok-free.dev${endpoint}`,
         { url },
         {
-          headers: {
-            'ngrok-skip-browser-warning': 'true'
-          }
+          headers: { 'ngrok-skip-browser-warning': 'true' }
         }
       );
       
       if (isPlaylist) {
         if (response.data.error) throw new Error(response.data.error);
         setPlaylistData(response.data);
-        setVideoData(null); // Hide single video UI
+        setVideoData(null);
       } else {
         setVideoData(response.data);
-        setPlaylistData(null); // Hide playlist UI
+        setPlaylistData(null);
       }
     } catch (error) {
-      alert("Error fetching video details. URL check karein.");
+      alert("Error fetching details. URL check karein.");
       console.error(error);
     }
     setLoading(false);
   };
 
+  // Function to handle inline download with progress bar simulation
+  const downloadInlineVideo = async (videoUrl, videoId) => {
+    // Start progress simulation
+    setItemProgress(prev => ({ ...prev, [videoId]: 10 }));
+    
+    const progressInterval = setInterval(() => {
+      setItemProgress(prev => {
+        const currentProgress = prev[videoId] || 10;
+        if (currentProgress >= 90) {
+          clearInterval(progressInterval);
+          return prev;
+        }
+        return { ...prev, [videoId]: currentProgress + 15 };
+      });
+    }, 200);
+
+    try {
+      const response = await axios.post(
+        'https://crown-ahoy-job.ngrok-free.dev/get-video-info',
+        { url: videoUrl },
+        {
+          headers: { 'ngrok-skip-browser-warning': 'true' }
+        }
+      );
+
+      clearInterval(progressInterval);
+
+      if (response.data && response.data.video_audio && response.data.video_audio.length > 0) {
+        // Set to 100% on success
+        setItemProgress(prev => ({ ...prev, [videoId]: 100 }));
+        
+        // Get the best quality Video+Audio link
+        const downloadUrl = response.data.video_audio[0].url;
+        
+        // Trigger automatic browser download
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.setAttribute('target', '_blank');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Clear progress bar after 2 seconds
+        setTimeout(() => {
+          setItemProgress(prev => {
+            const newState = { ...prev };
+            delete newState[videoId];
+            return newState;
+          });
+        }, 200);
+      } else {
+        alert("Download link nahi mil paya.");
+        clearInterval(progressInterval);
+        setItemProgress(prev => ({ ...prev, [videoId]: 0 }));
+      }
+    } catch (error) {
+      console.error(error);
+      clearInterval(progressInterval);
+      setItemProgress(prev => ({ ...prev, [videoId]: 0 }));
+      alert("Is video ko process karne mein error aayi.");
+    }
+  };
+
   return (
-    <> {/* YEH FRAGMENT ADD KIYA GAYA HAI */}
-      
+    <>
       {/* Playlist Display Section */}
       {playlistData && (
-        <div className="mt-8 p-6 bg-gray-800 rounded-lg text-white">
-          <h2 className="text-2xl font-bold mb-2">{playlistData.playlist_title}</h2>
-          <p className="text-gray-400 mb-6">Total Videos: {playlistData.total_videos}</p>
+        <div className="mt-8 p-6 bg-gray-800 rounded-lg text-white max-w-4xl mx-auto">
+          <h2 className="text-2xl font-bold mb-2 text-center">{playlistData.playlist_title}</h2>
+          <p className="text-gray-400 mb-6 text-center">Total Videos: {playlistData.total_videos}</p>
           
-          <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">
-            {playlistData.videos.map((video) => (
-              <div key={video.id} className="flex justify-between items-center bg-gray-700 p-4 rounded-md">
-                <span className="truncate pr-4 w-3/4 text-sm">{video.title}</span>
-                
-                <button 
-                  onClick={() => {
-                    // This sets the main input to this specific video and clears the list
-                    setUrl(video.url); 
-                    setPlaylistData(null);
-                  }}
-                  className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded font-medium text-sm transition-colors"
-                >
-                  Get Video
-                </button>
-              </div>
-            ))}
+          <div className="flex flex-col gap-4 max-h-[500px] overflow-y-auto pr-2">
+            {playlistData.videos.map((video) => {
+              const progress = itemProgress[video.id];
+              const isProcessing = progress > 0;
+
+              return (
+                <div key={video.id} className="flex flex-col bg-gray-700 p-4 rounded-md relative overflow-hidden">
+                  <div className="flex justify-between items-center z-10">
+                    <span className="truncate pr-4 w-3/4 text-sm font-medium">{video.title}</span>
+                    
+                    <button 
+                      onClick={() => downloadInlineVideo(video.url, video.id)}
+                      disabled={isProcessing}
+                      className={`${
+                        isProcessing ? 'bg-gray-500' : 'bg-red-600 hover:bg-red-700'
+                      } px-4 py-2 rounded font-medium text-sm transition-colors text-white min-w-[100px]`}
+                    >
+                      {isProcessing ? (progress === 100 ? 'Done!' : 'Processing...') : 'Get Video'}
+                    </button>
+                  </div>
+
+                  {/* Inline Progress Bar Renderer */}
+                  {isProcessing && (
+                    <div className="w-full bg-gray-600 h-1.5 mt-3 rounded-full overflow-hidden">
+                      <div 
+                        className="bg-green-500 h-full transition-all duration-200" 
+                        style={{ width: `${progress}%` }}
+                      ></div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -76,7 +155,7 @@ function App() {
         <div className="input-bar-group">
           <input 
             type="text" 
-            placeholder="Yahan YouTube video link paste karein..." 
+            placeholder="Yahan YouTube video ya playlist link paste karein..." 
             value={url} 
             onChange={(e) => setUrl(e.target.value)} 
           />
@@ -91,7 +170,6 @@ function App() {
             <h3 className="video-title">{videoData.title}</h3>
             
             <div className="all-download-options">
-              {/* Video + Audio Section */}
               {videoData.video_audio.length > 0 && (
                 <div className="quality-section">
                   <h4>🎥 Video + Audio (Ready to Play)</h4>
@@ -105,7 +183,6 @@ function App() {
                 </div>
               )}
 
-              {/* Audio Only Section */}
               {videoData.audio_only.length > 0 && (
                 <div className="quality-section">
                   <h4>🎵 Audio Only (Music/Podcast)</h4>
@@ -119,7 +196,6 @@ function App() {
                 </div>
               )}
 
-              {/* High Quality Video Only Section */}
               {videoData.video_only.length > 0 && (
                 <div className="quality-section">
                   <h4>🔕 High Quality Video (No Audio)</h4>
@@ -136,7 +212,7 @@ function App() {
           </div>
         )}
       </div>
-    </> 
+    </>
   );
 }
 
