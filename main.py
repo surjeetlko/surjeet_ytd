@@ -41,6 +41,9 @@ async def get_video_info(request: VideoRequest):
             video_only_dict = {}
             
             for f in info.get('formats', []):
+                if 'm3u8' in protocol or 'dash' in protocol:
+                    continue
+
                 vcodec = f.get('vcodec')
                 acodec = f.get('acodec')
                 ext = f.get('ext')
