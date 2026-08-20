@@ -127,7 +127,7 @@ def proxy_download(url: str, title: str = "downloaded_video"):
     def iterfile():
         # stream=True ensures memory is not overloaded
         with requests.get(url, stream=True) as r:
-            for chunk in r.iter_content(chunk_size=8192):
+            for chunk in r.iter_content(chunk_size=1024 * 1024):
                 if chunk:
                     yield chunk
 
