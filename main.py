@@ -1,7 +1,9 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 import yt_dlp
 from pydantic import BaseModel
+import requests
 
 
 app = FastAPI()
@@ -116,3 +118,23 @@ async def get_playlist_info(request: Request):
             
     except Exception as e:
         return {"error": str(e)}
+
+# ==========================================
+# YAHAN SE NAYA PROXY ENDPOINT SHURU HOTA HAI
+# ==========================================
+@app.get("/proxy-download")
+def proxy_download(url: str, title: str = "downloaded_video"):
+    def iterfile():
+        # stream=True ensures memory is not overloaded
+        with requests.get(url, stream=True) as r:
+            for chunk in r.iter_content(chunk_size=8192):
+                if chunk:
+                    yield chunk
+
+    # Ensure the title is safe for filenames
+    safe_title = "".join([c for c in title if c.isalpha() or c.isdigit() or c==' ']).rstrip()
+    headers = {
+        "Content-Disposition": f'attachment; filename="{safe_title}.mp4"'
+    }
+    
+    return StreamingResponse(iterfile(), media_type="video/mp4", headers=headers)
