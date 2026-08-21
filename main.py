@@ -26,7 +26,7 @@ async def get_video_info(request: VideoRequest):
         'cookiefile': 'cookies.txt',
         'extractor_args': {
             'youtube': {
-                'client': ['android', 'ios'] # <-- YEH HAI MAGIC TRICK
+                'client': ['web', 'android', 'ios'] # <-- YEH HAI MAGIC TRICK
             }
         }
     }
@@ -41,7 +41,9 @@ async def get_video_info(request: VideoRequest):
             video_only_dict = {}
             
             for f in info.get('formats', []):
-                if 'm3u8' in protocol or 'dash' in protocol:
+                # SAFE MAGIC FIX: Check if protocol exists before searching in it
+                protocol = f.get('protocol')
+                if protocol and ('m3u8' in protocol or 'dash' in protocol):
                     continue
 
                 vcodec = f.get('vcodec')
