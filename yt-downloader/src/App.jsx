@@ -170,21 +170,20 @@ function App() {
             <h3 className="video-title">{videoData.title}</h3>
             
             <div className="all-download-options">
-              {videoData.video_only.length > 0 && (
+              {videoData.video_audio && videoData.video_audio.length > 0 && (
                 <div className="quality-section">
-                  <h4>🌟 High Quality Video (Merged Video + Audio)</h4>
-                  <div className="download-wrapper-line">
-                    <a 
-                      href={`https://crown-ahoy-job.ngrok-free.dev/download-merged?url=${encodeURIComponent(url)}&title=${encodeURIComponent(videoData.title || "youtube_video")}`} 
-                      className="download-pill orange-pill"
-                    >
-                      Download Full HD (Takes 10-20 sec)
-                    </a>
-                  </div>
+                  <h4>🎥 Video + Audio (Ready to Play)</h4>
+                  {videoData.video_audio.map((format, index) => (
+                    <div key={`va-${index}`} className="download-wrapper-line"> 
+                      <a href={format.url} target="_blank" rel="noopener noreferrer" className="download-pill green-pill">
+                        Download {format.resolution} ({format.ext})
+                      </a>
+                    </div>
+                  ))}
                 </div>
               )}
 
-              {videoData.audio_only.length > 0 && (
+              {videoData.audio_only && videoData.audio_only.length > 0 && (
                 <div className="quality-section">
                   <h4>🎵 Audio Only (Music/Podcast)</h4>
                   {videoData.audio_only.map((format, index) => (
@@ -197,7 +196,7 @@ function App() {
                 </div>
               )}
 
-              {videoData.video_only.length > 0 && (
+              {videoData.video_only && videoData.video_only.length > 0 && (
                 <div className="quality-section">
                   <h4>🔕 High Quality Video (No Audio)</h4>
                   {videoData.video_only.map((format, index) => (
