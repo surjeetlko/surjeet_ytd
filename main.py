@@ -6,6 +6,7 @@ from fastapi.responses import StreamingResponse, FileResponse
 import yt_dlp
 from pydantic import BaseModel
 import requests
+from typing import Optional
 
 
 app = FastAPI()
@@ -155,7 +156,8 @@ def proxy_download(url: str, title: str = "downloaded_video"):
 # NAYA ENDPOINT: combined video+audio HD download (server-side merge via ffmpeg)
 # ==========================================
 @app.get("/download-merged")
-def download_merged(url: str, height: int, title: str = "video", background_tasks: BackgroundTasks = None):
+# def download_merged(url: str, height: int, title: str = "video", background_tasks: BackgroundTasks = None):
+async def download_merged(url: str, title: str = "youtube_video", height: Optional[int] = None, background_tasks: BackgroundTasks = BackgroundTasks()):
     """
     Frontend ke 'Video Only' buttons ab isko call karein (url + height ke saath).
     yt-dlp bestvideo (<=height) + bestaudio ko fetch karke ffmpeg se merge karega,
