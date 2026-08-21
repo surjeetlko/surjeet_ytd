@@ -157,48 +157,38 @@ def proxy_download(url: str, title: str = "downloaded_video"):
 # ==========================================
 @app.get("/download-merged")
 # def download_merged(url: str, height: int, title: str = "video", background_tasks: BackgroundTasks = None):
-async def download_merged(url: str, title: str = "youtube_video", height: Optional[int] = None, background_tasks: BackgroundTasks = BackgroundTasks()):
+async def download_merged(url: str, title: str = "youtube_video", background_tasks: BackgroundTasks = BackgroundTasks()):    
     """
     Frontend ke 'Video Only' buttons ab isko call karein (url + height ke saath).
     yt-dlp bestvideo (<=height) + bestaudio ko fetch karke ffmpeg se merge karega,
     fir merged mp4 seedha response mein bhej denge aur temp file delete ho jayegi.
     """
-    file_id = str(uuid.uuid4())
-    output_template = os.path.join(DOWNLOAD_DIR, f"{file_id}.%(ext)s")
-
-    ydl_opts = {
-        'quiet': True,
+    safe_title = "".join([c for c in title if c.isalpha() or c.isdigit() or c==' ']).rstrip()
+    if not safe_title:
+        safe_title = "downloaded_video"
+    
+    output_filename = f"{safe_title}.mp4"
+    
+    # Yahan koi height ya extra filter nahi hona chahiye
+    ydl_opts_merge = {
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'outtmpl': output_filename,
         'cookiefile': 'cookies.txt',
-        'format': f'bestvideo[height<={height}]+bestaudio/best[height<={height}]',
-        'merge_output_format': 'mp4',   # ffmpeg installed hona chahiye system pe
-        'outtmpl': output_template,
-        'extractor_args': {
-            'youtube': {
-                'client': ['web', 'android', 'ios']
-            }
-        }
+        'quiet': True,
+        'merge_output_format': 'mp4'
     }
-
+    
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        with yt_dlp.YoutubeDL(ydl_opts_merge) as ydl:
             ydl.download([url])
-
-        final_path = os.path.join(DOWNLOAD_DIR, f"{file_id}.mp4")
-
-        if not os.path.exists(final_path):
-            raise HTTPException(status_code=500, detail="Merge failed: output file not found. Check ffmpeg installation.")
-
-        safe_title = "".join([c for c in title if c.isalpha() or c.isdigit() or c == ' ']).rstrip() or "video"
-
-        if background_tasks is not None:
-            background_tasks.add_task(cleanup_file, final_path)
-
-        return FileResponse(
-            path=final_path,
-            media_type="video/mp4",
-            filename=f"{safe_title}.mp4"
-        )
-    except HTTPException:
-        raise
+            
+        def remove_file(path: str):
+            if os.path.exists(path):
+                os.remove(path)
+                
+        background_tasks.add_task(remove_file, output_filename)
+        
+        return FileResponse(path=output_filename, filename=output_filename, media_type='video/mp4')
+        
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        return {"error": f"Failed to process video: {str(e)}"}
